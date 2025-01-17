@@ -45,9 +45,9 @@ class BibEntry:
   def addfield(self, fieldtype, value):
     value = re.sub('{ ','{',value)
     value = re.sub(' }','}',value)
+    value = value.strip()
     while value.startswith('{') and value.endswith('}'):
       value = value[1:-1]
-    value = value.strip()
     if value == '':
       return
     fieldtype = fieldtype.lower()
