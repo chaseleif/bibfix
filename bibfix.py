@@ -104,10 +104,10 @@ def fix(bibfilename, outprefix):
   entries = {}
   print('Reading')
   while len(bibfile) > 1:
-    if not top.match(bibfile):
-      bibfile = bibfile[1:]
     if not bibfile.startswith('@'):
       bibfile = bibfile[bibfile.find('@'):]
+    if not top.match(bibfile):
+      bibfile = bibfile[1:]
       continue
     i = top.match(bibfile).span()[1]
     entry = BibEntry(*top.match(bibfile).groups())
