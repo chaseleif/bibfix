@@ -144,6 +144,10 @@ def fix(bibfilename, outprefix):
         rstart += 1
       entry.addfield(key, value)
     bibfile = bibfile[rstart:]
+    if len(entry.fields) == 0:
+      print(f'\r\x1b[1A\x1b[0K@{entry.entrytype}{{{entry.citekey}}} is empty')
+      print('Reading')
+      continue
     key = entry.citekey.lower()
     if key in entries:
       if not isinstance(entries[key], list):
