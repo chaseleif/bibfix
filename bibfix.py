@@ -70,13 +70,15 @@ class BibEntry:
     # all of other fields in self fields
     if all([key in self.fields for key in other.fields]):
       # all are equal
-      if all([self.fields[key].lower() == other.fields[key].lower() \
+      if all([re.sub('[{}]','',self.fields[key].lower()) == \
+              re.sub('[{}]','',other.fields[key].lower()) \
               for key in other.fields]):
         return True
     # all of self fields in other fields
     elif all([key in other.fields for key in self.fields]):
       # all are equal
-      if all([self.fields[key].lower() == other.fields[key].lower() \
+      if all([re.sub('[{}]','',self.fields[key].lower()) == \
+              re.sub('[{}]','',other.fields[key].lower()) \
               for key in self.fields]):
         return True
     return False
