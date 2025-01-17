@@ -109,43 +109,42 @@ def fix(bibfilename, outprefix):
     if not bibfile.startswith('@'):
       bibfile = bibfile[bibfile.find('@'):]
       continue
-    lstart = top.match(bibfile).span()[1]
+    i = top.match(bibfile).span()[1]
     entry = BibEntry(*top.match(bibfile).groups())
     print(f'\r\x1b[1A\x1b[8C\x1b[0K@{entry.entrytype}{{{entry.citekey}')
-    rstart = lstart
-    if bibfile[rstart] == ' ':
-      rstart += 1
-    while bibfile[rstart:rstart+1] not in ['','}','@']:
+    if bibfile[i] == ' ':
+      i += 1
+    while bibfile[i:i+1] not in ['','}','@']:
       key = ''
-      c = bibfile[rstart]
+      c = bibfile[i]
       while c not in [' ','=']:
         key += c
-        rstart += 1
-        c = bibfile[rstart]
-      while bibfile[rstart] in [' ','=']:
-        rstart += 1
+        i += 1
+        c = bibfile[i]
+      while bibfile[i] in [' ','=']:
+        i += 1
       value = ''
       level = 0
-      if bibfile[rstart] == '{':
-        rstart += 1
+      if bibfile[i] == '{':
+        i += 1
         stopchars = ['}']
-      elif bibfile[rstart] == '\"':
-        rstart += 1
+      elif bibfile[i] == '\"':
+        i += 1
         stopchars = ['\"']
       else:
         stopchars = [',',' ','}']
-      while level > 0 or bibfile[rstart] not in stopchars:
-        value += bibfile[rstart]
-        if bibfile[rstart] == '{':
+      while level > 0 or bibfile[i] not in stopchars:
+        value += bibfile[i]
+        if bibfile[i] == '{':
           level += 1
-        elif bibfile[rstart] == '}':
+        elif bibfile[i] == '}':
           level -= 1
-        rstart += 1
-      rstart += 1
-      while bibfile[rstart] in [' ',',']:
-        rstart += 1
+        i += 1
+      i += 1
+      while bibfile[i] in [' ',',']:
+        i += 1
       entry.addfield(key, value)
-    bibfile = bibfile[rstart:]
+    bibfile = bibfile[i:]
     if len(entry.fields) == 0:
       print(f'\r\x1b[1A\x1b[0K@{entry.entrytype}{{{entry.citekey}}} is empty')
       print('Reading')
