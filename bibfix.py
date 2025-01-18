@@ -201,14 +201,17 @@ def fix(bibfilename, outprefix):
           f'with {uniqcount} unique keys and {count} total entries')
 
 if __name__ == '__main__':
-  parser = ArgumentParser(prog=sys.argv[0], description='Bibtex bib fixer')
-  parser.add_argument('-i', '--input', default='main.bib',
-                      metavar='<input file>', help='input bib file')
-  parser.add_argument('-o', '--output', default='filtered',
-                      metavar='<output prefix>', help='output file prefix')
-  args = vars(parser.parse_args())
-  if not os.path.isfile(args['input']):
-    parser.print_help()
-    parser.exit('Input file does not exist!')
+  if len(sys.argv) == 2 and os.path.isfile(sys.argv[1]):
+    args = {'input':sys.argv[1],'output':'filtered'}
+  else:
+    parser = ArgumentParser(prog=sys.argv[0], description='Bibtex bib fixer')
+    parser.add_argument('-i', '--input', default='main.bib',
+                        metavar='<input file>', help='input bib file')
+    parser.add_argument('-o', '--output', default='filtered',
+                        metavar='<output prefix>', help='output file prefix')
+    args = vars(parser.parse_args())
+    if not os.path.isfile(args['input']):
+      parser.print_help()
+      parser.exit('Input file does not exist!')
   fix(args['input'], args['output'])
 
