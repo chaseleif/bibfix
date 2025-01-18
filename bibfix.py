@@ -101,29 +101,34 @@ def fix(bibfilename, outprefix):
   bibfile = re.sub('[\r\n\t]',' ',bibfile)
   bibfile = re.sub('  +',' ',bibfile)
   top = re.compile('@ ?([^ {]+) ?{([^ ,]+) ?,')
+  starts = []
+  i = bibfile.find('@')
+  while i >= 0:
+    if top.match(bibfile[i:]):
+      starts.append(i)
+    i = bibfile.find('@',i+1)
   entries = {}
+  print(f'Found {len(starts)} possible entries')
   print('Reading')
-  while len(bibfile) > 1:
-    if not bibfile.startswith('@'):
-      bibfile = bibfile[bibfile.find('@'):]
-    if not top.match(bibfile):
-      bibfile = bibfile[1:]
-      continue
-    i = top.match(bibfile).span()[1]
-    entry = BibEntry(*top.match(bibfile).groups())
+  for starti in range(len(starts)):
+    nextstart = len(bibfile) if starti+1==len(starts) else starts[starti+1]
+    i = top.match(bibfile[starts[starti]:]).span()[1] + starts[starti]
+    entry = BibEntry(*top.match(bibfile[starts[starti]:]).groups())
     print(f'\r\x1b[1A\x1b[8C\x1b[0K@{entry.entrytype}{{{entry.citekey}')
     if bibfile[i] == ' ':
       i += 1
-    while bibfile[i:i+1] not in ['','}','@']:
+    while i < nextstart and bibfile[i] not in ['}','@']:
       key = ''
-      while bibfile[i] not in [' ','=']:
+      while i < nextstart and bibfile[i] not in [' ','=']:
         key += bibfile[i]
         i += 1
-      while bibfile[i] in [' ','=']:
+      while i < nextstart and bibfile[i] in [' ','=']:
         i += 1
       value = ''
       level = 0
-      if bibfile[i] == '{':
+      if i == nextstart:
+        pass
+      elif bibfile[i] == '{':
         i += 1
         stopchars = ['}']
       elif bibfile[i] == '\"':
@@ -131,18 +136,22 @@ def fix(bibfilename, outprefix):
         stopchars = ['\"']
       else:
         stopchars = [',',' ','}']
-      while level > 0 or bibfile[i] not in stopchars:
+      while i < nextstart and (level > 0 or bibfile[i] not in stopchars):
         value += bibfile[i]
         if bibfile[i] == '{':
           level += 1
         elif bibfile[i] == '}':
           level -= 1
         i += 1
-      i += 1
-      while bibfile[i] in [' ',',']:
+      if i < nextstart:
+        i += 1
+      while i < nextstart and bibfile[i] in [' ',',']:
         i += 1
       entry.addfield(key, value)
-    bibfile = bibfile[i:]
+    if i == nextstart:
+      print(f'\r\x1b[1A\x1b[0K@{entry.entrytype}{{{entry.citekey}}} incomplete')
+      print('Reading')
+      continue
     if len(entry.fields) == 0:
       print(f'\r\x1b[1A\x1b[0K@{entry.entrytype}{{{entry.citekey}}} is empty')
       print('Reading')
@@ -160,18 +169,34 @@ def fix(bibfilename, outprefix):
       entries[key] = entry
   print(f'\r\x1b[1A\x1b[0KDone reading {bibfilename}')
   keys = sorted(entries.keys())
-  print(f'Creating {outprefix}.bib and {outprefix}_duplicates.bib')
+  print(f'Creating output files')
+  count = 0
   with open(f'{outprefix}.bib','w') as outfile:
     for key in keys:
       if isinstance(entries[key], list):
         continue
+      count += 1
       outfile.write(str(entries[key]))
+  if count == 0:
+    print(f'No unique entries to write to {outprefix}.bib')
+    os.unlink(f'{outprefix}.bib')
+  else:
+    print(f'Created {outprefix}.bib with {count} unique entries')
+  uniqcount, count = 0, 0
   with open(f'{outprefix}_duplicates.bib','w') as outfile:
     for key in keys:
       if not isinstance(entries[key], list):
         continue
+      uniqcount += 1
       for entry in entries[key]:
         outfile.write(str(entry))
+        count += 1
+  if count == 0:
+    print(f'No duplicate entries to write to {outprefix}_duplicates.bib')
+    os.unlink(f'{outprefix}_duplicates.bib')
+  else:
+    print(f'Created {outprefix}_duplicates.bib',
+          f'with {uniqcount} unique keys and {count} total entries')
 
 if __name__ == '__main__':
   parser = ArgumentParser(prog=sys.argv[0], description='Bibtex bib fixer')
