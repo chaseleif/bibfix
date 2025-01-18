@@ -107,8 +107,7 @@ def fix(bibfilename, outprefix):
     if top.match(bibfile[i:]):
       starts.append(i)
     else:
-      invalid = bibfile[i:i+50]
-      print(f'Invalid entry start: {invalid}')
+      print(f'Invalid entry start: {bibfile[i:i+50]}')
     i = bibfile.find('@',i+1)
   entries = {}
   print(f'Found {len(starts)} possible entries')
