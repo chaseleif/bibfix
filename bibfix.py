@@ -103,16 +103,26 @@ def fix(bibfilename, outprefix):
   top = re.compile('@ ?([^ {]+) ?{ ?([^ ,]+) ?,')
   starts = []
   i = bibfile.find('@')
+  count = 0
   while i >= 0:
     if top.match(bibfile[i:]):
       starts.append(i)
+      count += 1
     else:
-      print(f'Invalid entry start: {bibfile[i:i+50]}')
+      print(bibfile[i:i+50])
+      choice = input('Is this an invalid entry? [Y/n] ')
+      print(f'\r\x1b[2A\x1b[0K',end='')
+      if not choice.lower().startswith('n'):
+        print(f'Ignoring invalid entry {bibfile[i:i+50]}')
+        starts.append(i)
+      print('\x1b[0K',end='')
     i = bibfile.find('@',i+1)
   entries = {}
-  print(f'Found {len(starts)} possible entries')
+  print(f'Found {count} possible entries')
   print('Reading')
   for starti in range(len(starts)):
+    if not top.match(bibfile[starts[starti]:]):
+      continue
     nextstart = len(bibfile) if starti+1==len(starts) else starts[starti+1]
     i = top.match(bibfile[starts[starti]:]).span()[1] + starts[starti]
     entry = BibEntry(*top.match(bibfile[starts[starti]:]).groups())
