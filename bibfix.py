@@ -50,9 +50,8 @@ class BibEntry:
       value = value[1:-1]
     if value == '':
       return
-    fieldtype = fieldtype.lower()
+    fieldtype = fieldtype.lower().lstrip('%/ ')
     if fieldtype not in BibEntry.fieldtypes:
-      fieldtype = fieldtype.lstrip('%')
       self.notes.append(f'{fieldtype}={{{value}}},')
       return
     if fieldtype in self.fields:
@@ -80,6 +79,7 @@ class BibEntry:
       if all([re.sub('[{}]','',self.fields[key].lower()) == \
               re.sub('[{}]','',other.fields[key].lower()) \
               for key in self.fields]):
+        self.fields.update(other.fields)
         return True
     return False
   def __str__(self):
