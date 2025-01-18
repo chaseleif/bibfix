@@ -100,12 +100,15 @@ def fix(bibfilename, outprefix):
     bibfile = infile.read().strip()
   bibfile = re.sub('[\r\n\t]',' ',bibfile)
   bibfile = re.sub('  +',' ',bibfile)
-  top = re.compile('@ ?([^ {]+) ?{([^ ,]+) ?,')
+  top = re.compile('@ ?([^ {]+) ?{ ?([^ ,]+) ?,')
   starts = []
   i = bibfile.find('@')
   while i >= 0:
     if top.match(bibfile[i:]):
       starts.append(i)
+    else:
+      invalid = bibfile[i:bibfile.find('=',i+1)+1]
+      print(f'Invalid entry start: {invalid}')
     i = bibfile.find('@',i+1)
   entries = {}
   print(f'Found {len(starts)} possible entries')
