@@ -116,11 +116,9 @@ def fix(bibfilename, outprefix):
       i += 1
     while bibfile[i:i+1] not in ['','}','@']:
       key = ''
-      c = bibfile[i]
-      while c not in [' ','=']:
-        key += c
+      while bibfile[i] not in [' ','=']:
+        key += bibfile[i]
         i += 1
-        c = bibfile[i]
       while bibfile[i] in [' ','=']:
         i += 1
       value = ''
